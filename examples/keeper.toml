@@ -1,0 +1,26 @@
+# Пример настроек присмотра. Запуск: keeper run --config examples/keeper.toml
+
+[keeper]
+journal = "журнал.sqlite"   # где хранить события
+check_every = 5             # секунд между проверками
+# webhook = "https://chat.example/hooks/keeper"   # куда слать уведомления; пусто — в консоль
+
+[[agent]]
+name = "сборщик-отчётов"
+command = "python -m worker --queue reports"
+cwd = "."
+restart_limit = 5      # столько неудач подряд — и присмотр перестаёт поднимать агента
+backoff = 2            # первая пауза перед перезапуском, дальше 4, 8, 16 секунд
+idle_timeout = 300     # молчит дольше пяти минут — считаем зависшим
+
+[[agent]]
+name = "разборщик-почты"
+command = ["python", "-m", "worker", "--queue", "mail"]
+idle_timeout = 120
+environment = { WORKER_LOG = "debug" }
+
+[[agent]]
+name = "ночной-отчёт"
+command = "python -m worker --once --report nightly"
+restart_always = false   # завершился спокойно — это нормально, поднимать не надо
+restart_limit = 0        # и перезапускать после падения тоже не нужно

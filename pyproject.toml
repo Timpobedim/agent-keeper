@@ -1,0 +1,54 @@
+[project]
+name = "agent-keeper"
+version = "1.0.0"
+description = "Присмотр за фоновыми агентами: запуск, проверка живости, перезапуск, журнал и уведомления"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+]
+
+[project.scripts]
+keeper = "keeper.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.12",
+    "mypy>=1.17",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/keeper"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["slow: проверки, которые поднимают настоящие процессы на несколько секунд"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM", "PT", "RUF", "DTZ", "ASYNC"]
+# RUF001-003: в русских строках есть кириллица, похожая на латиницу, — это нормально.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S311", "S603", "S607"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["keeper"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
